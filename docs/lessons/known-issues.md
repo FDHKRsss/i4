@@ -2,11 +2,26 @@
 
 _Recurring walls/gotchas and how to get past them. One bullet each._
 
-- Frontend smoke tests pinned to exact copy break every time a milestone changes the copy (M8 replaced the seed-capture string). Assert behavior/structure — heading, ordered-list length, `href` targets — instead of literal copy strings.
-- A plan checkbox reflects committed state, not the working tree: M8 -- stub still read `- [ ]` while it was already implemented and green as uncommitted changes. Before (re)implementing an open item, check `git status` and read the working tree, not just the checkbox.
-- Milestone state lives in THREE places that drift independently — PLAN.md's `- [x]` checkbox, PLAN.md's `## Current status` narrative, and ARCHITECTURE.md's `## Implementation status (living)`. When a milestone ships, mark all three in the SAME change, or the critic re-flags whichever is stale (recurred at M11 and again at M12: code shipped but PLAN/ARCHITECTURE still read "not implemented yet").
-- `npm test` prints `Error: db down` to stderr — this is EXPECTED, not a failure: the negative-path specs mock `listReports`/`insertReport` rejection (`GET /api/reports` → `503`, `POST /api/report` → `500`). Exit code 0 + all tests passing = green.
-- Adding a gate to a wizard step (e.g. "Dalej" disabled until a photo is captured) breaks the existing multi-step navigation tests, which click "Dalej" repeatedly and now stall at the gated step. Fix them in the SAME change: satisfy each new gate first — a `capturePhoto(container)` helper that clicks the step's `<canvas>`, later mock geolocation / fill the description — before clicking "Dalej". This recurs for M10 (location) and M11 (description).
-- jsdom has no `canvas.toBlob` and its `Blob` lacks `arrayBuffer()`/`text()`. In tests, read a Blob's contents via `FileReader.readAsText`; keep image/capture helpers deterministic + headless-safe (placeholder JPEG blobs) instead of depending on a real canvas.
-- Swapping a stub module for its real implementation removes the stub-only helpers its spec still imports (M10: after `location.ts` became real, `location.spec.ts` still imported the removed `getMockPosition` → 1 failing test). Update the spec in the SAME change — stub the real API (e.g. `navigator.geolocation`) instead of the deleted mock helper. This recurs for every remaining stub→real pass (M11–M14).
-- A critic verdict can be stale or malformed, not ground truth: it has surfaced as "no deliverable"/"still broken" *and* "could not parse the critic's verdict as JSON" / "Sorry, need more steps" while the work (M10) was already implemented uncommitted. Treat any "no deliverable / still broken / unparseable verdict" as a prompt to re-check `git status` + the working tree, not as proof the work is missing.
+- Node/npm are NOT on the default PATH. Prepend `/home/op/.local/node-v22.23.2-linux-x64/bin`
+  (matches `.nvmrc` = `22`) before `npm test` / `npm run typecheck`, else `command not found: node`.
+- Docker is unavailable in this workspace (`docker: not found`). Validate backend/API behavior with
+  the Node test suite (`npm test` + `npm run typecheck`) instead of relying on `docker compose`.
+- `npm test` prints `Error: db down` to stderr; this is EXPECTED — the two negative-path specs mock
+  `listReports`/`insertReport` rejection (GET `/api/reports` → `503`, POST `/api/report` → `500`).
+  Exit code 0 + all tests passing means the suite is green, not broken.
+- Doc test-count claims are pinned to the **committed** tree, but `npm test` runs the **working**
+  tree. Verify against the working tree (the runner's `N passed`, or `grep -c '^\\s*it('` /
+  `^\\s*test(`), NOT `git show HEAD`: a reviewer read HEAD (`43`) as "matching" while the
+  runner/working tree had `46`.
+- Critic verdicts are unreliable — even when handed the goal, `docs/PLAN.md`, and the prior actor's
+  output, the critic can still emit a non-verdict (`approved:false` with `Could not parse the
+  critic's verdict as JSON`, `No task/goal, plan, or actor output`, or `need more steps`). Treat any
+  reply that is not a single strict-JSON `{approved, blocking_issues, cosmetic_issues, notes}` object
+  as "not reviewed"; always include the goal + plan + last actor output when invoking a reviewer.
+- The seed's `src/app.spec.tsx` smoke test pinned the seed's capture-screen copy; a UI milestone that
+  replaces that copy (M8 → Home) makes it fail legitimately. It is a test-owned file — rewrite it to
+  pin the new flow rather than leaving it red or touching production code.
+- Milestone state lives in THREE places that drift independently — PLAN.md's `- [x]` checkbox,
+  PLAN.md's `## Current status`, and ARCHITECTURE.md's `## Implementation status`. Update all three
+  in the SAME change when a milestone ships, or the critic re-flags whichever is stale (recurred at
+  M11 and again at M12).
