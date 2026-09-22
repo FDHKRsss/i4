@@ -30,7 +30,7 @@ Key decisions vs. the earlier seed:
 | Camera | mock canvas only | **real `getUserMedia`** (rear camera), with mock fallback |
 | GPS | fixed mock | **real `navigator.geolocation`**, with manual-entry fallback |
 | Photos | files on `uploads` volume + path in DB | **`BYTEA` in Postgres** (compressed full + thumbnail), served via API |
-| Flow | single capture screen | 6-step wizard + separate reports page (hash-routed) |
+| Flow | single capture screen | 4-step wizard (camera→location→description→review) + Home + separate reports page (6 pages, hash-routed) |
 | Audio | synthetic WAV | **removed** (not in the requested steps; re-addable module) |
 | Map | none | self-contained `MapPin` tile grid derived from lat/lon |
 
@@ -295,10 +295,14 @@ CREATE INDEX IF NOT EXISTS reports_created_at_idx
   `npm run typecheck` (frontend + server + test tsconfigs). Both are green
   (174 passed). Docker is **not** available in this workspace — `docker compose
   up` is verified on the target box per `i3_ref/docs/RUNBOOK.md`.
-- The workspace-level docs here are the plan/design source of truth; the
-  `i3_ref/docs/*` copies are pinned by `i3_ref/tests/docs.spec.ts`, so any
-  milestone state change must update PLAN + ARCHITECTURE (and that pin) in the
-  same change.
+- The workspace-level docs here are the plan/design source of truth. The
+  `i3_ref/docs/*` files are a **separate, older per-milestone set** owned by the
+  i3 build — not mirrors of these workspace docs — and have diverged from them
+  (e.g. `i3_ref/docs/PLAN.md`'s "Current status" keeps the literal
+  "M15 (stub + real) — done" that `i3_ref/tests/docs.spec.ts` pins, while this
+  workspace PLAN.md does not). They are pinned to the i3 tree's own shipped
+  state by `i3_ref/tests/docs.spec.ts`; changes to them belong to the i3 build,
+  not to this workspace.
 
 ## Out of scope & future swaps (modular, minimal now)
 
