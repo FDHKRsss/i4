@@ -9,3 +9,7 @@ _Reusable techniques that worked, so they are reused not rediscovered._
   `tests/docs.spec.ts` locks the three milestone-state locations (PLAN `- [x]` checkbox, PLAN
   `## Current status`, ARCHITECTURE `## Implementation status`) to the shipped state, mirroring
   `tests/runbook.spec.ts`. Update the pin in the same change as the docs when the next milestone ships.
+- Pin a dead-code cleanup with a regression guard so removed modules can't silently return: a
+  node-env spec asserts the deleted file(s) no longer exist AND walks `src/`+`server/`+`tests/`
+  (skipping `node_modules`/`dist`/`server-dist`) to confirm no remaining file references the removed
+  symbol — `tests/deadcode.spec.ts` locked the `useMockAudio` removal after audio left the step flow.

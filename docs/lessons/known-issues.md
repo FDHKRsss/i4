@@ -30,3 +30,8 @@ _Recurring walls/gotchas and how to get past them. One bullet each._
   in the SAME change when a milestone ships, or the critic re-flags whichever is stale (recurred at
   M11, M12, and M14). Since M14, `tests/docs.spec.ts` also pins these three locations — update it in
   the same change too, or the suite breaks when the next milestone lands.
+- ARCHITECTURE.md's `## What will be in the code` tree also carries per-file inline comments that
+  encode milestone/swap state, but these are NOT pinned by `tests/docs.spec.ts`, so they drift
+  silently. Proof: the `server/geo.ts` comment claimed `(seed; swapped under M14)` while the provider
+  was still mock-only. When you touch such a comment, verify it against the actual source
+  (`server/geo.ts` etc.) and fix the comment — never rewrite the code to match a stale claim.
